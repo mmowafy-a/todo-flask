@@ -18,7 +18,7 @@ def login():
 
     if check_password_hash(user.PASSWORD, password):
 
-        access_token = create_access_token(identity=email)
+        access_token = create_access_token(identity=user.ID)
     
 
         return {"Token": access_token}, 200
@@ -35,3 +35,9 @@ def register():
     user.save_to_db()
 
     return {"message": "User created successfully"}
+
+@app.route('/test', methods=['GET'])
+def index():
+    user = UserModel.query.filter(UserModel.EMAIL == 'momo@gmail.com').first()
+
+    return {"message": user.json()}

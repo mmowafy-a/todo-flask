@@ -12,6 +12,10 @@ class UserModel(db.Model):
         self.EMAIL = EMAIL
         self.PASSWORD = PASSWORD
     
+    def json(self):
+        return{
+            "id": self.ID,
+        }
     # Saves user to db
     def save_to_db(self):
         db.session.add(self)
