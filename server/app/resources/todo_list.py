@@ -6,9 +6,10 @@ from flask_jwt_extended import create_access_token,get_jwt,get_jwt_identity, \
 
 from app.models.User import UserModel
 from app.db import db
-from server.app.models.Todo import TodoModel
+from app.models.TodoModel import TodoModel
 
 @app.route('/create', methods=['POST'])
+@jwt_required()
 def create():
     jsonData = request.json
 
@@ -21,13 +22,17 @@ def create():
 
     return {"message": "Todo created successfully"}	, 201
 
-@app.route('/todo/<int:id>', methods=['GET'])
-def get_todo(id):
+@app.route('/todo', methods=['GET'])
+@jwt_required()
+def get_todo():
+    id = get_jwt_identity()
+    
     todo = TodoModel.query.filter(TodoModel.USER_ID == id).all()
 
     return {"TODOs": list(map(lambda x: x.json(), todo))}
 
 @app.route('/todo/<int:id>', methods=['DELETE'])
+@jwt_required()
 def delete_todo(id):
     todo = TodoModel.query.filter(TodoModel.ID == id).first()
     todo.delete_from_db()
@@ -35,6 +40,7 @@ def delete_todo(id):
     return {"message": "Todo deleted successfully"}
 
 @app.route('/todo/<int:id>', methods=['PUT'])
+@jwt_required()
 def update_todo(id):
     jsonData = request.json
 

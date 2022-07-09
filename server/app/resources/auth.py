@@ -1,3 +1,4 @@
+import json
 from app import app
 from flask import Flask, request, jsonify
 from app.models import User
@@ -21,7 +22,7 @@ def login():
         access_token = create_access_token(identity=user.ID)
     
 
-        return {"Token": access_token}, 200
+        return {"token": access_token}, 200
         
     return {"error": "Invalid username or password"}, 401
 
@@ -36,8 +37,16 @@ def register():
 
     return {"message": "User created successfully"}
 
+@app.route('/logout', methods=['POST'])
+@jwt_required()
+def logout():
+    res = jsonify({'message': 'Logout successful'})
+    unset_jwt_cookies(res)
+    return {"message": "Logout successful"}
+
 @app.route('/test', methods=['GET'])
 def index():
     user = UserModel.query.filter(UserModel.EMAIL == 'momo@gmail.com').first()
 
     return {"message": user.json()}
+
