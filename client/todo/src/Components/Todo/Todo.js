@@ -4,12 +4,17 @@ import React, { useEffect, useState } from "react";
 import ToDoForm from "./ToDoForm";
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
+import $ from 'jquery';
 
 const Todo = () =>{
 
     const [todosPost, setTodosPost] = useState(null);
     const [todosList,setToDosList] = useState([]);
     const [actionsStyle,setActionsStyle] = useState(null);
+    const [editMode,setEditMode] = useState(false);
+    const [editData,setEditData] = useState(null)
+    const [showModal,setShowModal] = useState(false);
+
     const navigate = useNavigate();
 
     /**
@@ -21,28 +26,66 @@ const Todo = () =>{
         }
     },[])
 
+    const resetEditData = () =>{
+        setTodosPost(null);
+        setEditMode(false);
+        setEditData(null);
+    }
+
 
     const setToDoForm = (data) =>{
-        
         setTodosPost({"title": data.title, "description": data.description});
     }
 
     useEffect(()=>{
         if(todosPost){
-            sendData();
-
+            if(!editMode){
+                sendData();
+            }
+            else{
+                updateData();
+            }
         }
        
     },[todosPost])
 
     /**
+     * Updates a todo task.
+     */
+
+    const updateData = async () =>{
+        debugger;
+        
+        await axios({
+            method: "PUT",
+            url: `http://localhost:5000/todo/${editData.id}`,
+            data: todosPost,
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("jwt")
+            }
+        })
+        .then(res => {
+            toast.success("Todo updated successfully");
+            setTodosPost(null);
+            setEditMode(false);
+            setEditData(null);
+            getToDos();
+        })
+    }
+
+    useEffect(()=>{
+        debugger;
+        console.log(editMode)
+    },[editMode])
+
+    /**
      * Action buttons for todo, can be edit and delete
      * @returns 
      */
-    const actions = (id) => {
+    const actions = (id,todo) => {
         return(
             <div className="d-flex py-2 justify-content-center">
-            <button className="btn btn-primary ps-2" id={id} onClick={editHandler}>Edit</button>
+            <button data-bs-toggle="modal" data-bs-target="#modal" className="btn btn-primary ps-2" id={id} onClick={(e) => editHandler(e,todo)}>Edit</button>
             <button className="btn btn-danger ms-2" id={id} onClick={deleteHandler}>Delete</button>
             </div>
         )
@@ -50,7 +93,7 @@ const Todo = () =>{
     }
 
     const deleteHandler = async (e) =>{
-        debugger;
+        
         await axios({
             method: "DELETE",
             url:`http://localhost:5000/todo/${e.target.id}`,
@@ -73,12 +116,15 @@ const Todo = () =>{
         )
     }
 
-    const editHandler = () =>{
-
+    const editHandler = (e,todo) =>{
+        setEditMode(true);
+        
+        setEditData({title : todo.TITLE, description: todo.DESCRIPTION, id: e.target.id})
+      
     }
        
     const sendData = async () =>{
-        debugger;
+        
         await axios({
             url: "http://localhost:5000/create",
             method: "POST",
@@ -107,7 +153,7 @@ const Todo = () =>{
                 Authorization: "Bearer " + localStorage.getItem("jwt")
             }
         }).then(res =>{
-            debugger;
+            
             setToDosList(res.data);
         });
     }
@@ -119,7 +165,7 @@ const Todo = () =>{
     },[])
 
     const logoutHandler = async () =>{
-        debugger;
+        
         await axios({
             url: "http://localhost:5000/logout",
             method: "POST",
@@ -166,7 +212,7 @@ const Todo = () =>{
                 <tr key={todo.ID}>
                 <td>{todo.TITLE}</td>
                 <td>{todo.DESCRIPTION}</td>
-                <td>{actions(todo.ID)}</td>
+                <td>{actions(todo.ID,todo)}</td>
                 </tr>
             ))}
           </tbody>
@@ -174,7 +220,8 @@ const Todo = () =>{
      </div>
      </div>
 }
-     <ToDoForm setToDo={setToDoForm}></ToDoForm>
+    
+     <ToDoForm resetData={resetEditData} editData = {editData} editMode={editMode} setToDo={setToDoForm}></ToDoForm>
      </>
     )
     }

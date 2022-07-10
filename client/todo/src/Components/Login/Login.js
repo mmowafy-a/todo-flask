@@ -2,7 +2,7 @@ import axios from "axios";
 import React, { useEffect } from "react"
 import useToken from "../../Hooks/useToken";
 import "./Login.css"
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
 import { Toast } from "bootstrap";
 
@@ -65,6 +65,7 @@ const Login = () =>{
   </div>
  
   <button type="submit" className="btn btn-primary w-25">Login</button>
+  <p className="mt-4">Dont have an account? <Link to="/register">Click here</Link></p>
 </form>
 </div>
         
