@@ -17,7 +17,7 @@ def create():
     description = jsonData['description']
     user_id = get_jwt_identity()
 
-    todo = TodoModel(title, description, user_id)
+    todo = TodoModel(title, description, user_id, False)
     todo.save_to_db()
 
     return {"message": "Todo created successfully"}	, 201
@@ -53,3 +53,12 @@ def update_todo(id):
     todo.save_to_db()
 
     return {"message": "Todo updated successfully"}
+
+@app.route('/todo/complete/<int:id>', methods=['PUT'])
+@jwt_required()
+def complete_todo(id):
+    todo = TodoModel.query.filter(TodoModel.ID == id).first()
+    todo.COMPLETED = True if todo.COMPLETED == False else False
+    todo.save_to_db()
+
+    return {"message": "Todo completed successfully"}

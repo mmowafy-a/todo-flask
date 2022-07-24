@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import ToDoForm from "./ToDoForm";
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
-import $ from 'jquery';
 
 const Todo = () =>{
 
@@ -84,9 +83,9 @@ const Todo = () =>{
      */
     const actions = (id,todo) => {
         return(
-            <div className="d-flex py-2 justify-content-center">
-            <button data-bs-toggle="modal" data-bs-target="#modal" className="btn btn-primary ps-2" id={id} onClick={(e) => editHandler(e,todo)}>Edit</button>
-            <button className="btn btn-danger ms-2" id={id} onClick={deleteHandler}>Delete</button>
+            <div className="d-flex justify-content-center">
+            <button data-bs-toggle="modal" data-bs-target="#modal" className="btn btn-primary btn-sm w-25 ms-2" id={id} onClick={(e) => editHandler(e,todo)}>Edit</button>
+            <button className="btn btn-danger btn-sm w-25 ms-2" id={id} onClick={deleteHandler}>Delete</button>
             </div>
         )
     
@@ -179,7 +178,24 @@ const Todo = () =>{
         })
     }
 
-
+    const checkBoxHandler = async (e,todo) =>{
+            await axios({
+                url: `http://localhost:5000/todo/complete/${todo.ID}`,
+                method: "PUT",
+                data: {id: todo.ID},
+                headers:{
+                    Authorization: "Bearer " + localStorage.getItem("jwt")
+                }
+            }).then(res => {
+                toast.success("To do modified", {
+                    position: "top-right",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,})
+                    getToDos()
+            });
+        
+    }
     return(
         <>
          <ToastContainer></ToastContainer>
@@ -202,14 +218,21 @@ const Todo = () =>{
      <table className="table table-light table-hover w-100 pt-5 table-striped">
           <thead className="table-dark">
             <tr className="text-center">
-            <th scope="col">Title</th>
-            <th scope="col">Description</th>
-            <th scope="col">Actions</th>
+            <th>Done ?</th>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Actions</th>
             </tr>
           </thead>
           <tbody className="text-center">
             {todosList.TODOs.map(todo => (
                 <tr key={todo.ID}>
+                <td>
+                <div class="form-check justify-content-center d-flex">
+                    <input onClick={(e) => checkBoxHandler(e,todo)} class="form-check-input" type="checkbox" value="0"  id="flexCheckDefault" checked={todo.COMPLETED ? 'checked' : "" }/>
+                    
+                </div>
+                </td>
                 <td>{todo.TITLE}</td>
                 <td>{todo.DESCRIPTION}</td>
                 <td>{actions(todo.ID,todo)}</td>
